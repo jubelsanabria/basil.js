@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Basil</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100vh; background: #000;
+               display: flex; align-items: center; justify-content: center;
+               overflow: hidden; font-family: sans-serif; }
+  canvas { background: #000; image-rendering: pixelated; }
+</style>
+</head>
+<body>
+  <canvas id="basil-canvas"></canvas>
+  <script>
+    window.BASIL_WIDTH = 765;
+    window.BASIL_HEIGHT = 503;
+    window.BASIL_SCALE = 8;
+    window.BASIL_APP_NAME = 'Basil';
+  </script>
+  <!-- There is deliberately no program.txt beside this page. Basil looks for
+       one, doesn't find it, and opens its editor instead - which is the
+       quickest way to start writing something. Press F1 to bring the editor
+       back over a program once it is running. -->
+  <script src="../basil.js"></script>
+</body>
+</html>
