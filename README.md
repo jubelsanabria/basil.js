@@ -3,7 +3,7 @@
 A programming language that runs in a browser, with a 3D renderer and its own
 editor built in. One file, no build step, no install.
 
-Basil is C-like. `basil.js` contains the whole thing: the lexer, parser,
+basil.js is C-like, and the file contains the whole thing: the lexer, parser,
 resolver, bytecode compiler and interpreter that run the language, a WebGL2
 renderer with a shader transpiler so shaders are written in Basil too, and the
 development environment — editor, syntax highlighting, tabbed buffers and a
@@ -44,7 +44,7 @@ the browser blocks `fetch` on `file://` URLs. Anything will do:
 python -m http.server
 ```
 
-On startup Basil fetches `./program.txt` next to the page and runs it. **If
+On startup basil.js fetches `./program.txt` next to the page and runs it. **If
 there is no `program.txt`, the editor opens instead** — which is the easiest
 way to begin. Write something, press Run, and it executes. Press `F1` at any
 point to bring the editor back over a running program and read or change its
@@ -70,11 +70,11 @@ pixel-exact instead of being resampled. For a program that should fill the
 window at its true size, set the width and height from `window.innerWidth` and
 `window.innerHeight` and set `BASIL_SCALE` to 1.
 
-## Writing Basil with an AI
+## Writing it with an AI
 
-Basil is small enough to explain and unusual enough to be worth exploring, and
+basil.js is small enough to explain and unusual enough to be worth exploring, and
 it pairs well with an AI assistant. Give one this repository, describe what you
-want, and let it write the Basil — that is how most of what basilScape is made
+want, and let it write the code — that is how most of what basilScape is made
 of came together. It is a good way to find out what the language can do without
 learning it front to back first.
 
