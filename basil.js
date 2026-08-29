@@ -56996,7 +56996,7 @@
     if (results.length === 0) return '';
     const lines = [];
     lines.push('basil.js lint output from "' + _ide.activeFile + '" ('
-      + _ide.lines.length + ' lines):');
+      + _ide.lines.length + ' lines, basil.js ' + BASIL_VERSION + '):');
     lines.push('');
     for (const r of results) {
       const tag = (r.severity === 'err') ? 'ERROR' : 'WARN ';
