@@ -5,7 +5,7 @@ editor built in. One file, no build step, no install.
 
 basil.js is C-like, and the file contains the whole thing: the lexer, parser,
 resolver, bytecode compiler and interpreter that run the language, a WebGL2
-renderer with a shader transpiler so shaders are written in Basil too, and the
+renderer with a shader transpiler so shaders are written in it too, and the
 development environment — editor, syntax highlighting, tabbed buffers and a
 linter.
 
@@ -20,7 +20,7 @@ Put `basil.js` next to an HTML file and load it:
 ```html
 <!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>Basil</title>
+<head><meta charset="UTF-8"><title>basil.js</title>
 <style>
   html, body { margin: 0; height: 100vh; background: #000;
                display: flex; align-items: center; justify-content: center; }
