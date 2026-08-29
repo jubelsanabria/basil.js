@@ -51726,7 +51726,7 @@
 
   function _ideSeedHelloWorld() {
     _ide.lines = [
-      '// Welcome to the Basil IDE.',
+      '// Welcome to the basil.js IDE.',
       '// Press F1 to toggle this editor. Click Run to execute.',
       '// Your buffer is saved automatically between sessions.',
       '',
@@ -51843,7 +51843,7 @@
     if (!_ide._firstOpenDone) {
       _ide._firstOpenDone = true;
       const seedFlag = (_ide.lines.length > 0
-        && _ide.lines[0].indexOf('Welcome to the Basil IDE') >= 0);
+        && _ide.lines[0].indexOf('Welcome to the basil.js IDE') >= 0);
       if (seedFlag && programSource && programSource.length > 0) {
         _ide.lines = programSource.split('\n');
         if (_ide.lines.length === 0) _ide.lines = [''];
@@ -56829,16 +56829,33 @@
       const uses2D = /\b(clearScreen|drawRect|drawCircle|fillCircle|fillTriangle|drawText|drawLine|setPixel|drawSprite|drawSpriteRotated|drawSpriteScaled|drawSpriteEx|drawSpriteFlipped|drawSpriteRegion|drawGlyphRegion)\s*\(/.test(code);
       if ((swMatch || shMatch) && uses2D) {
         if (!snMatch) {
+          // Reading the size into a variable and then drawing from that
+          // variable IS the adaptive pattern: such a program cannot render
+          // off-center, because every coordinate is derived from whatever
+          // size it was handed. That includes the welcome program the IDE
+          // opens with, which centres its text on W/2 and H/2. Warning
+          // about it told a first-time user their correct program was
+          // wrong. Only warn when the values are read and then not used.
+          const adaptive = [/(\w+)\s*=\s*screenWidth\s*\(\s*\)/,
+                            /(\w+)\s*=\s*screenHeight\s*\(\s*\)/]
+            .some(function (re) {
+              const m = code.match(re);
+              if (!m) return false;
+              const uses = code.match(new RegExp('\\b' + m[1] + '\\b', 'g'));
+              return !!uses && uses.length > 1;
+            });
           // No declaration at all. Program will inherit whatever the
           // host happened to set, and will render off-center inside a
           // bigger framebuffer when run in the IDE.
           const swLine = swMatch
             ? code.slice(0, swMatch.index).split('\n').length
             : (shMatch ? code.slice(0, shMatch.index).split('\n').length : 0);
-          out.push({ severity: 'warn', line: swLine,
-            message: 'screenWidth/screenHeight read but no '
-              + 'setNativeResolution() call -- program will render at '
-              + 'host-default size, not your design size' });
+          if (!adaptive) {
+            out.push({ severity: 'warn', line: swLine,
+              message: 'screenWidth/screenHeight read but no '
+                + 'setNativeResolution() call -- program will render at '
+                + 'host-default size, not your design size' });
+          }
         } else {
           // Both present -- check ordering. Cheap test: index of
           // setNativeResolution must come before first screenWidth/Height.
@@ -56978,9 +56995,8 @@
       : _ide._lint.results;
     if (results.length === 0) return '';
     const lines = [];
-    lines.push('Basil lint output from "' + _ide.activeFile + '" ('
-      + _ide.lines.length + ' lines, basil ' + (window.Basil
-        && window.Basil.version || '?') + '):');
+    lines.push('basil.js lint output from "' + _ide.activeFile + '" ('
+      + _ide.lines.length + ' lines):');
     lines.push('');
     for (const r of results) {
       const tag = (r.severity === 'err') ? 'ERROR' : 'WARN ';
