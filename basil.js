@@ -51325,7 +51325,11 @@
   //   basil-ide-file:<name>       -- per-file content
   //   basil-ide-filelist          -- JSON { order: [...], active: '...' }
 
-  function _ideFileSlotKey(name) { return 'basil-ide-file:' + name; }
+  function _ideScope() {
+    try { return (location.pathname || '/') + '|'; } catch (e) { return ''; }
+  }
+
+  function _ideFileSlotKey(name) { return _ideScope() + 'basil-ide-file:' + name; }
 
   function _ideFileCurrentSlot() {
     return _ide.files[_ide.activeFile] || _ideFileEnsureSlot(_ide.activeFile);
@@ -51410,7 +51414,7 @@
   // "Recent" section so you can jump back to your last 5 tabs quickly.
   function _ideRecentFilesList() {
     try {
-      const raw = localStorage.getItem('basil-ide-recent-files');
+      const raw = localStorage.getItem(_ideScope() + 'basil-ide-recent-files');
       if (!raw) return [];
       const arr = JSON.parse(raw);
       return Array.isArray(arr) ? arr.slice(0, 5) : [];
@@ -51423,7 +51427,7 @@
     arr.unshift(name);
     if (arr.length > 5) arr.length = 5;
     try {
-      localStorage.setItem('basil-ide-recent-files', JSON.stringify(arr));
+      localStorage.setItem(_ideScope() + 'basil-ide-recent-files', JSON.stringify(arr));
     } catch (e) { /* localStorage full -- not critical */ }
   }
   function _ideRecentFilesOpen(name) {
@@ -51447,14 +51451,14 @@
       const activeText = _ide.files[active]
         ? _ide.files[active].lines.join('\n')
         : _ide.lines.join('\n');
-      localStorage.setItem('basil-ide-buffer', activeText);
+      localStorage.setItem(_ideScope() + 'basil-ide-buffer', activeText);
       for (const n of order) {
         if (_ide.files[n]) {
           localStorage.setItem(_ideFileSlotKey(n),
             _ide.files[n].lines.join('\n'));
         }
       }
-      localStorage.setItem('basil-ide-filelist',
+      localStorage.setItem(_ideScope() + 'basil-ide-filelist',
         JSON.stringify({ order: order, active: active }));
     } catch (e) {}
   }
@@ -51465,7 +51469,7 @@
   function _ideFilesLoad() {
     try {
       const meta = JSON.parse(
-        localStorage.getItem('basil-ide-filelist') || 'null');
+        localStorage.getItem(_ideScope() + 'basil-ide-filelist') || 'null');
       if (meta && Array.isArray(meta.order) && meta.order.length > 0) {
         _ide.files = Object.create(null);
         _ide.fileOrder = meta.order.slice();
@@ -51486,7 +51490,7 @@
     // Fallback: legacy single-file mode. Pull the old buffer key into
     // "program" and treat that as the only file.
     try {
-      const text = localStorage.getItem('basil-ide-buffer');
+      const text = localStorage.getItem(_ideScope() + 'basil-ide-buffer');
       if (text !== null && text !== '') {
         _ide.fileOrder = ['program'];
         _ide.files = Object.create(null);
@@ -51706,11 +51710,11 @@
   function _ideSaveBuffer() {
     // Mirror legacy key AND save the active file slot.
     try {
-      localStorage.setItem('basil-ide-buffer', _ide.lines.join('\n'));
+      localStorage.setItem(_ideScope() + 'basil-ide-buffer', _ide.lines.join('\n'));
       localStorage.setItem(_ideFileSlotKey(_ide.activeFile),
         _ide.lines.join('\n'));
       // Persist filelist meta (cheap; one tiny JSON).
-      localStorage.setItem('basil-ide-filelist', JSON.stringify({
+      localStorage.setItem(_ideScope() + 'basil-ide-filelist', JSON.stringify({
         order: _ide.fileOrder, active: _ide.activeFile,
       }));
     } catch (e) {}
@@ -51756,7 +51760,7 @@
   function _ideEnsureOverlay() {
     if (_ide.overlayCanvas) return;
     const c = document.createElement('canvas');
-    c.id = 'basil-ide-overlay';
+    c.id = _ideScope() + 'basil-ide-overlay';
     Object.assign(c.style, {
       position: 'fixed',
       left: '0', top: '0',
@@ -53928,7 +53932,7 @@
   function _ideWordWrapToggle() {
     _ide.wordWrap = !_ide.wordWrap;
     try {
-      localStorage.setItem('basil-ide-wordwrap', _ide.wordWrap ? '1' : '0');
+      localStorage.setItem(_ideScope() + 'basil-ide-wordwrap', _ide.wordWrap ? '1' : '0');
     } catch (e) {}
     _ide._wrapIndex = null;            // force rebuild
     _ide._wrapIndexAt = -1;
@@ -53938,7 +53942,7 @@
 
   function _ideWordWrapLoad() {
     try {
-      const saved = localStorage.getItem('basil-ide-wordwrap');
+      const saved = localStorage.getItem(_ideScope() + 'basil-ide-wordwrap');
       _ide.wordWrap = (saved === '1');
     } catch (e) { _ide.wordWrap = false; }
   }
@@ -54077,7 +54081,7 @@
       // Load from localStorage if any
       let arr = [];
       try {
-        const raw = localStorage.getItem('basil-ide-folds:' + tab);
+        const raw = localStorage.getItem(_ideScope() + 'basil-ide-folds:' + tab);
         if (raw) arr = JSON.parse(raw) || [];
         if (!Array.isArray(arr)) arr = [];
       } catch (e) {}
@@ -54101,7 +54105,7 @@
     const arr = [];
     for (const [s, e] of m.entries()) arr.push([s, e]);
     try {
-      localStorage.setItem('basil-ide-folds:' + tab, JSON.stringify(arr));
+      localStorage.setItem(_ideScope() + 'basil-ide-folds:' + tab, JSON.stringify(arr));
     } catch (e) {}
   }
 
@@ -54431,7 +54435,7 @@
       // Try to load from localStorage
       let arr = [];
       try {
-        const raw = localStorage.getItem('basil-ide-bookmarks:' + tab);
+        const raw = localStorage.getItem(_ideScope() + 'basil-ide-bookmarks:' + tab);
         if (raw) arr = JSON.parse(raw) || [];
         if (!Array.isArray(arr)) arr = [];
       } catch (e) {}
@@ -54444,7 +54448,7 @@
     const set = _ide._bookmarks && _ide._bookmarks[tab];
     if (!set) return;
     try {
-      localStorage.setItem('basil-ide-bookmarks:' + tab,
+      localStorage.setItem(_ideScope() + 'basil-ide-bookmarks:' + tab,
                            JSON.stringify(Array.from(set)));
     } catch (e) {}
   }
@@ -54771,14 +54775,14 @@
       const results = _ideRunBenchmarkSuite();
       let prev = null;
       try {
-        const raw = localStorage.getItem('basil-ide-bench-baseline');
+        const raw = localStorage.getItem(_ideScope() + 'basil-ide-bench-baseline');
         if (raw) prev = JSON.parse(raw);
       } catch (e) {}
       // Save new baseline (only if no errors)
       const hasErrors = results.some(r => r.error);
       if (!hasErrors) {
         try {
-          localStorage.setItem('basil-ide-bench-baseline', JSON.stringify(results));
+          localStorage.setItem(_ideScope() + 'basil-ide-bench-baseline', JSON.stringify(results));
         } catch (e) {}
       }
       _ide._benchResults = results;
@@ -55020,7 +55024,7 @@
     if (!_ide._breakpoints[tab]) {
       let arr = [];
       try {
-        const raw = localStorage.getItem('basil-ide-breakpoints:' + tab);
+        const raw = localStorage.getItem(_ideScope() + 'basil-ide-breakpoints:' + tab);
         if (raw) arr = JSON.parse(raw) || [];
         if (!Array.isArray(arr)) arr = [];
       } catch (e) {}
@@ -55033,7 +55037,7 @@
     const set = _ide._breakpoints && _ide._breakpoints[tab];
     if (!set) return;
     try {
-      localStorage.setItem('basil-ide-breakpoints:' + tab,
+      localStorage.setItem(_ideScope() + 'basil-ide-breakpoints:' + tab,
                            JSON.stringify(Array.from(set)));
     } catch (e) {}
   }
@@ -56549,7 +56553,7 @@
     // users get the lint panel visible so they discover it.
     let openDefault = true;
     try {
-      const saved = localStorage.getItem('basil-ide-lint-open');
+      const saved = localStorage.getItem(_ideScope() + 'basil-ide-lint-open');
       if (saved === '0') openDefault = false;
       else if (saved === '1') openDefault = true;
     } catch (e) {}
@@ -56945,7 +56949,7 @@
     _ideLintInit();
     _ide._lint.open = !_ide._lint.open;
     try {
-      localStorage.setItem('basil-ide-lint-open',
+      localStorage.setItem(_ideScope() + 'basil-ide-lint-open',
         _ide._lint.open ? '1' : '0');
     } catch (e) {}
     if (_ide._lint.open) _ideLintRun();
@@ -57871,7 +57875,7 @@
       _ideOpen();
       if (_ide._learn && !_ide._learn.open) {
         _ide._learn.open = true;
-        try { localStorage.setItem('basil-ide-learn-open', '1'); } catch (e) {}
+        try { localStorage.setItem(_ideScope() + 'basil-ide-learn-open', '1'); } catch (e) {}
       }
       _ideRender && _ideRender();
     }, delayMs);
@@ -58174,7 +58178,7 @@
     _ideLearnInit();
     _ide._learn.open = !_ide._learn.open;
     try {
-      localStorage.setItem('basil-ide-learn-open',
+      localStorage.setItem(_ideScope() + 'basil-ide-learn-open',
         _ide._learn.open ? '1' : '0');
     } catch (e) {}
     _ideSetStatus(
@@ -59034,7 +59038,7 @@
     // persists across reloads via localStorage.
     let openDefault = false;
     try {
-      const saved = localStorage.getItem('basil-ide-console-open');
+      const saved = localStorage.getItem(_ideScope() + 'basil-ide-console-open');
       if (saved === '0') openDefault = false;
       else if (saved === '1') openDefault = true;
     } catch (e) {}
@@ -59157,7 +59161,7 @@
   function _ideErrorToastEnsureEl() {
     if (_ide._toastEl) return _ide._toastEl;
     const el = document.createElement('div');
-    el.id = 'basil-ide-error-toast';
+    el.id = _ideScope() + 'basil-ide-error-toast';
     el.style.cssText = [
       'position: fixed',
       'top: 12px',
@@ -59281,7 +59285,7 @@
     if (_ide._menu) return;
     _ide._menu = {
       open: -1,                       // -1 closed, 0=File, 1=Edit, 2=View, 3=Run
-      labels: ['File', 'Edit', 'View', 'Run', 'Visual', 'Learn'],
+      labels: ['File', 'Edit', 'View', 'Run'],
       // Menu definitions: each is array of {label, hint, action}
       // A label of '-' is a separator.
       items: [
@@ -59607,7 +59611,7 @@
     _ide.lineHeight = Math.round(size * 1.3);
     _ide.charWidth = Math.max(6, Math.round(size * 0.6));
     _ide.gutterW = Math.max(40, _ide.charWidth * 5 + 8);
-    try { localStorage.setItem('basil-ide-fontsize', String(size)); } catch (e) {}
+    try { localStorage.setItem(_ideScope() + 'basil-ide-fontsize', String(size)); } catch (e) {}
     _ideEnsureCursorVisible();
     _ideSetStatus('Font size: ' + size + 'px', 1200);
   }
@@ -59615,7 +59619,7 @@
   function _ideFontReset()     { _ideApplyFontSize(14); }
   function _ideFontLoad() {
     try {
-      const s = parseInt(localStorage.getItem('basil-ide-fontsize') || '14', 10);
+      const s = parseInt(localStorage.getItem(_ideScope() + 'basil-ide-fontsize') || '14', 10);
       if (s >= 10 && s <= 28 && s !== _ide.fontSize) _ideApplyFontSize(s);
     } catch (e) {}
   }
@@ -59695,7 +59699,7 @@
   const SNAP_MAX = 20;
   function _ideSnapshotList() {
     try {
-      const raw = localStorage.getItem('basil-ide-snaplist');
+      const raw = localStorage.getItem(_ideScope() + 'basil-ide-snaplist');
       if (!raw) return [];
       const arr = JSON.parse(raw);
       return Array.isArray(arr) ? arr : [];
@@ -59706,10 +59710,10 @@
       while (arr.length > SNAP_MAX) {
         const dropped = arr.pop();
         if (dropped && dropped.label) {
-          localStorage.removeItem('basil-ide-snap:' + dropped.label);
+          localStorage.removeItem(_ideScope() + 'basil-ide-snap:' + dropped.label);
         }
       }
-      localStorage.setItem('basil-ide-snaplist', JSON.stringify(arr));
+      localStorage.setItem(_ideScope() + 'basil-ide-snaplist', JSON.stringify(arr));
     } catch (e) {}
   }
   // ---------- Import/Export to disk ----------
@@ -59978,7 +59982,7 @@
     list.unshift({ label: label, ts: Date.now(),
                    lines: _ide.lines.length });
     try {
-      localStorage.setItem('basil-ide-snap:' + label, JSON.stringify({
+      localStorage.setItem(_ideScope() + 'basil-ide-snap:' + label, JSON.stringify({
         label: label, ts: Date.now(),
         lines: _ide.lines,
       }));
@@ -60017,7 +60021,7 @@
       if (n >= 1 && n <= list.length) {
         const dropped = list[n - 1].label;
         list.splice(n - 1, 1);
-        try { localStorage.removeItem('basil-ide-snap:' + dropped); } catch (e) {}
+        try { localStorage.removeItem(_ideScope() + 'basil-ide-snap:' + dropped); } catch (e) {}
         _ideSnapshotWriteList(list);
         _ideSetStatus('Deleted snapshot "' + dropped + '"', 2500);
       }
@@ -60030,7 +60034,7 @@
     }
     const label = list[n - 1].label;
     try {
-      const raw = localStorage.getItem('basil-ide-snap:' + label);
+      const raw = localStorage.getItem(_ideScope() + 'basil-ide-snap:' + label);
       if (!raw) { _ideSetStatus('Snapshot "' + label + '" missing', 2500); return; }
       const data = JSON.parse(raw);
       if (!data || !Array.isArray(data.lines)) {
@@ -60071,7 +60075,7 @@
     _ideConsoleInit();
     _ide._console.open = !_ide._console.open;
     try {
-      localStorage.setItem('basil-ide-console-open',
+      localStorage.setItem(_ideScope() + 'basil-ide-console-open',
         _ide._console.open ? '1' : '0');
     } catch (e) {}
     _ideSetStatus('Console ' + (_ide._console.open ? 'shown' : 'hidden'), 1500);
